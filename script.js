@@ -9,6 +9,7 @@ let isLoading = false;
 let allEntreprisesAeroparc = [], allEntreprisesGDBERSOL = [];
 let fuseEntreprises, fuseGDBERSOL;
 
+
 const map = L.map('map').setView([44.83, -0.715], 13);
 
 // Fonds de carte
@@ -304,3 +305,80 @@ function toggle(layer, visible) {
   if (!layer) return;
   visible ? map.addLayer(layer) : map.removeLayer(layer);
 }
+
+// Isochrones
+function drawIsochrones(lat, lon) {
+  if (isLoading) return;
+  isLoading = true;
+  document.getElementById("spinner").style.display = "block";
+
+  const footRange = parseInt(document.getElementById("iso-range-foot").value);
+  const bikeRange = parseInt(document.getElementById("iso-range-bike").value);
+
+  if (currentIsoLayerFoot) map.removeLayer(currentIsoLayerFoot);
+  if (currentIsoLayerBike) map.removeLayer(currentIsoLayerBike);
+
+  Promise.all([
+    fetch("https://api.openrouteservice.org/v2/isochrones/foot-walking", {
+      method: "POST",
+      headers: { "Authorization": orsAPIKey, "Content-Type": "application/json" },
+      body: JSON.stringify({ locations: [[lon, lat]], range: [footRange] })
+    }).then(res => res.json()),
+    fetch("https://api.openrouteservice.org/v2/isochrones/cycling-regular", {
+      method: "POST",
+      headers: { "Authorization": orsAPIKey, "Content-Type": "application/json" },
+      body: JSON.stringify({ locations: [[lon, lat]], range: [bikeRange] })
+    }).then(res => res.json())
+  ])
+    .then(([isoFoot, isoBike]) => {
+      currentIsoLayerFoot = L.geoJSON(isoFoot, {
+        style: { color: "#9B59B6", fillColor: "#D2B4DE", fillOpacity: 0.25, weight: 3, dashArray: "4,6" }
+      }).addTo(map);
+      currentIsoLayerBike = L.geoJSON(isoBike, {
+        style: { color: "#1E8449", fillColor: "#52BE80", fillOpacity: 0.25, weight: 3 }
+      }).addTo(map);
+
+      map.fitBounds(currentIsoLayerFoot.getBounds(), { padding: [40, 40], maxZoom: 14 });
+    })
+    .catch(err => {
+      alert("Erreur lors du chargement des isochrones.");
+      console.error(err);
+    })
+    .finally(() => {
+      isLoading = false;
+      document.getElementById("spinner").style.display = "none";
+    });
+}
+
+// Rafraîchir si durée modifiée
+["iso-range-foot", "iso-range-bike"].forEach(id =>
+  document.getElementById(id).addEventListener("change", () => {
+    if (selectedArret) drawIsochrones(selectedArret.lat, selectedArret.lon);
+  })
+);
+
+// ───────────── RENDRE LES BOITES DEPLACABLES ─────────────
+document.querySelectorAll('.draggable').forEach(box => {
+  let isDragging = false;
+  let offsetX = 0, offsetY = 0;
+
+  box.addEventListener("mousedown", (e) => {
+    isDragging = true;
+    offsetX = e.clientX - box.offsetLeft;
+    offsetY = e.clientY - box.offsetTop;
+    box.style.cursor = "grabbing";
+  });
+
+  document.addEventListener("mousemove", (e) => {
+    if (isDragging) {
+      box.style.left = `${e.clientX - offsetX}px`;
+      box.style.top = `${e.clientY - offsetY}px`;
+    }
+  });
+
+  document.addEventListener("mouseup", () => {
+    isDragging = false;
+    box.style.cursor = "grab";
+  });
+});
+
