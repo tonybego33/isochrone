@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Isochrones PMIE</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Favicon Bordeaux Métropole -->
+  <link rel="icon" type="image/svg+xml" href="https://pbs.twimg.com/profile_images/1572874571321163777/0-ZVno3S_400x400.png">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- Style personnalisé -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Carte -->
+  <div id="map"></div>
+
+  <!-- Contrôles de durée -->
+  <div id="controls" class="draggable">
+    <label for="iso-range-foot">Durée à pied :</label><br>
+    <select id="iso-range-foot">
+      <option value="180">3 min</option>
+      <option value="300">5 min</option>
+      <option value="600" selected>10 min</option>
+      <option value="900">15 min</option>
+    </select><br><br>
+
+    <label for="iso-range-bike">Durée à vélo :</label><br>
+    <select id="iso-range-bike">
+      <option value="180">3 min</option>
+      <option value="300">5 min</option>
+      <option value="600" selected>10 min</option>
+      <option value="900">15 min</option>
+    </select>
+  </div>
+
+  <!-- Panneau de contrôle -->
+  <div id="legend-control" class="draggable">
+    <!-- TRANSPORT -->
+    <strong>🚈 Transports :</strong><br>
+    <label><input type="checkbox" id="chk-tram"> Tous les trams</label><br>
+    <label style="margin-left: 10px;"><input type="checkbox" id="chk-tramA"> Tram A</label><br>
+    <label style="margin-left: 10px;"><input type="checkbox" id="chk-tramB"> Tram B</label><br>
+    <label style="margin-left: 10px;"><input type="checkbox" id="chk-tramC"> Tram C</label><br>
+    <label style="margin-left: 10px;"><input type="checkbox" id="chk-tramD"> Tram D</label><br>
+    <label><input type="checkbox" id="chk-bus"> Bus</label><br><br>
+
+    <!-- ENTREPRISES -->
+    <strong>🏢 Entreprises :</strong><br>
+    <label><input type="checkbox" id="chk-aeroparc"> PMIE Aéroparc</label><br>
+    <label><input type="checkbox" id="chk-gdbersol"> PMIE Grand Bersol</label><br><br>
+
+    <!-- ZONES -->
+    <strong>🗺️ Zones :</strong><br>
+    <label><input type="checkbox" id="chk-aeroparc-zone"> Zone Aéroparc</label><br>
+    <label><input type="checkbox" id="chk-bersol-zone"> Zone Grand Bersol</label><br><br>
+
+    <!-- MOBILITÉ DOUCE -->
+    <strong>🚲 Mobilité douce :</strong><br>
+    <label><input type="checkbox" id="chk-bike"> Pistes cyclables</label><br><br>
+
+    <!-- RECHERCHE -->
+    <strong>🔍 Rechercher une entreprise :</strong><br>
+    <input type="text" id="search-input" placeholder="Rechercher une entreprise..." />
+  </div>
+
+  <!-- Légende -->
+  <div id="map-legend" class="draggable">
+    <strong>Légende :</strong><br><br>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Map_pin_icon_green.svg/752px-Map_pin_icon_green.svg.png" width="16"> Arrêt de bus<br>
+    <img src="https://ws-maas.infotbm.com/uploads/network/line/images/65f81cc3efe57_A.svg" width="16"> Arrêt de tram<br><br>
+    <span class="legend-dot red"></span> Entreprises PMIE Aéroparc<br>
+    <span class="legend-dot black"></span> Entreprises PMIE Grand Bersol<br><br>
+    <span class="legend-line violet-dash"></span> Isochrone à pied<br>
+    <span class="legend-line green-line"></span> Isochrone à vélo
+  </div>
+
+  <!-- Chargement -->
+  <div id="spinner">
+    <div class="loader"></div>
+    <span>Chargement des isochrones…</span>
+  </div>
+
+  <!-- Message Zoom -->
+  <div id="zoom-message">🔍 Zoomez davantage pour afficher cette couche.</div>
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
+  <script src="script.js"></script>
+</body>
+</html>
