@@ -13,16 +13,16 @@ const map = L.map('map').setView([44.83, -0.715], 13);
 
 // Fonds de carte
 const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '&copy; OpenStreetMap'
+  attribution: '&copy; OpenStreetMap | Code: Tony Bego'
 }).addTo(map);
 
 const satellite = L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
   subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-  attribution: 'Google Satellite'
+  attribution: 'Google Satellite | Code: Tony Bego'
 });
 
 const cartoLight = L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png', {
-  attribution: '&copy; CartoDB'
+  attribution: '&copy; CartoDB | Code: Tony Bego'
 });
 
 L.control.layers({
