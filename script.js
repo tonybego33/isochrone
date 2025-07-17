@@ -1,3 +1,8 @@
+// ============================================================================
+// Script principal : initialise la carte Leaflet, charge les données et gère
+// le calcul des isochrones via l'API OpenRouteService.
+// ============================================================================
+
 // Clé API OpenRouteService
 const orsAPIKey = "5b3ce3597851110001cf6248bb82b003b23646f9b489a2ef88cef1eb";
 
@@ -11,6 +16,8 @@ let fuseEntreprises, fuseGDBERSOL;
 
 
 const map = L.map('map', { preferCanvas: true }).setView([44.83, -0.715], 13);
+L.markerGroup = L.markerClusterGroup;
+
 
 // Fonds de carte
 const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -54,7 +61,7 @@ let layerPistes;
 let layerZoneBersol;
 let layerZoneAeroparc;
 
-// Message de zoom
+// Affiche un message temporaire demandant à l'utilisateur de zoomer
 function showZoomMessage() {
   const msg = document.getElementById("zoom-message");
   msg.style.display = "block";
@@ -65,7 +72,10 @@ function showZoomMessage() {
 }
 
 
-// Chargement des arrêts
+// ---------------------------------------------------------------------------
+// Chargement des arrêts de bus et de tram depuis le fichier GeoJSON.
+// Chaque arrêt devient un marqueur cliquable qui déclenche le calcul des isochrones autour de sa position.
+// ---------------------------------------------------------------------------
 fetch("Arrets_reseau_KBM.geojson")
   .then(res => res.json())
   .then(data => {
@@ -105,7 +115,9 @@ fetch("Arrets_reseau_KBM.geojson")
     });
   });
 
-// ⬇️ Couches conditionnelles par zoom
+// ----------------------------
+// Affichage ou masquage des couches selon le niveau de zoom sélectionné
+// ----------------------------
 function updateBusLayerVisibility() {
   const zoom = map.getZoom();
   const checkbox = document.getElementById("chk-bus");
@@ -147,7 +159,10 @@ map.on("zoomend", () => {
 });
 
 
+// -----------
 // Pistes cyclables
+// Charge la couche GeoJSON des pistes et l'affiche uniquement à partir
+// d'un certain niveau de zoom.
 function updateBikeLayerVisibility() {
   const zoom = map.getZoom();
   const checkbox = document.getElementById("chk-bike");
@@ -168,10 +183,9 @@ fetch("piste_cyclable.geojson")
   });
 
 // Chargement entreprises
-function renderLayerFromFeatures(features, icon, layerRef, checkboxId) {
+function renderLayerFromFeatures(features, icon, layerRef) {
   if (layerRef) map.removeLayer(layerRef);
-  const cluster = L.markerClusterGroup();
-  const geo = L.geoJSON(features, {
+  return L.geoJSON(features, {
     pointToLayer: (f, latlng) => L.marker(latlng, { icon }),
     onEachFeature: (f, l) => {
       const p = f.properties;
@@ -181,10 +195,9 @@ function renderLayerFromFeatures(features, icon, layerRef, checkboxId) {
       l.bindPopup(popup);
     }
   });
-  cluster.addLayer(geo);
-  return cluster;
 }
 
+// Données des entreprises de la zone Aéroparc
 fetch("entreprisesaeroparc.geojson")
   .then(res => res.json())
   .then(data => {
@@ -193,10 +206,11 @@ fetch("entreprisesaeroparc.geojson")
       keys: ["properties.raison_sociale"],
       threshold: 0.3
     });
-    layerEntreprisesAEROPARC = renderLayerFromFeatures(allEntreprisesAeroparc, entrepriseAEROPARCIcon, null, "chk-aeroparc");
+    layerEntreprisesAEROPARC = renderLayerFromFeatures(allEntreprisesAeroparc, entrepriseAEROPARCIcon, null);
     updateEntreprisesLayerVisibility();
   });
 
+// Données des entreprises de la zone Grand Bersol
 fetch("entreprisesbersol.geojson")
   .then(res => res.json())
   .then(data => {
@@ -205,16 +219,17 @@ fetch("entreprisesbersol.geojson")
       keys: ["properties.raison_sociale"],
       threshold: 0.3
     });
-    layerEntreprisesGDBERSOL = renderLayerFromFeatures(allEntreprisesGDBERSOL, entrepriseGDBERSOLIcon, null, "chk-gdbersol");
+    layerEntreprisesGDBERSOL = renderLayerFromFeatures(allEntreprisesGDBERSOL, entrepriseGDBERSOLIcon, null);
     updateEntreprisesLayerVisibility();
   });
 
-// Recherche entreprise
+// -------------------------------------------------------
+// Barre de recherche permettant de filtrer les entreprises des deux zones à l'aide de Fuse.js
+// -------------------------------------------------------
 document.getElementById("search-input").addEventListener("input", e => {
   const query = e.target.value.trim().toLowerCase();
 
   if (!fuseEntreprises || !fuseGDBERSOL) {
-    // Data not yet loaded
     return;
   }
 
@@ -222,8 +237,8 @@ document.getElementById("search-input").addEventListener("input", e => {
   if (layerEntreprisesGDBERSOL) map.removeLayer(layerEntreprisesGDBERSOL);
 
   if (!query) {
-    layerEntreprisesAEROPARC = renderLayerFromFeatures(allEntreprisesAeroparc, entrepriseAEROPARCIcon, null, "chk-aeroparc");
-    layerEntreprisesGDBERSOL = renderLayerFromFeatures(allEntreprisesGDBERSOL, entrepriseGDBERSOLIcon, null, "chk-gdbersol");
+    layerEntreprisesAEROPARC = renderLayerFromFeatures(allEntreprisesAeroparc, entrepriseAEROPARCIcon, null);
+    layerEntreprisesGDBERSOL = renderLayerFromFeatures(allEntreprisesGDBERSOL, entrepriseGDBERSOLIcon, null);
     updateEntreprisesLayerVisibility();
     return;
   }
@@ -232,8 +247,8 @@ document.getElementById("search-input").addEventListener("input", e => {
   const resultsBersol = fuseGDBERSOL.search(query).map(r => r.item);
   const allResults = resultsAero.concat(resultsBersol);
 
-  layerEntreprisesAEROPARC = renderLayerFromFeatures(resultsAero, entrepriseAEROPARCIcon, null, "chk-aeroparc");
-  layerEntreprisesGDBERSOL = renderLayerFromFeatures(resultsBersol, entrepriseGDBERSOLIcon, null, "chk-gdbersol");
+  layerEntreprisesAEROPARC = renderLayerFromFeatures(resultsAero, entrepriseAEROPARCIcon, null);
+  layerEntreprisesGDBERSOL = renderLayerFromFeatures(resultsBersol, entrepriseGDBERSOLIcon, null);
 
   updateEntreprisesLayerVisibility();
 
@@ -244,7 +259,9 @@ document.getElementById("search-input").addEventListener("input", e => {
 });
 
 
-// Zones
+// -------------------------------------------------------
+// Polygones délimitant les deux zones d'activité
+// -------------------------------------------------------
 fetch("zonebersol.geojson")
   .then(res => res.json())
   .then(data => {
@@ -279,7 +296,9 @@ fetch("zoneaeroparc.geojson")
     }
   });
 
-// Filtres de couches
+// ----------------------------
+// Gestion des cases à cocher qui affichent ou masquent les couches
+// ----------------------------
 document.getElementById("chk-bus").onchange = updateBusLayerVisibility;
 document.getElementById("chk-aeroparc").onchange = updateEntreprisesLayerVisibility;
 document.getElementById("chk-gdbersol").onchange = updateEntreprisesLayerVisibility;
@@ -288,13 +307,14 @@ document.getElementById("chk-bike").onchange = updateBikeLayerVisibility;
 document.getElementById("chk-bersol-zone").onchange = e => toggle(layerZoneBersol, e.target.checked);
 document.getElementById("chk-aeroparc-zone").onchange = e => toggle(layerZoneAeroparc, e.target.checked);
 
-// Tramways individuels
+
+// Gestion indépendante de chaque ligne de tramway
 ["chk-tramA", "chk-tramB", "chk-tramC", "chk-tramD"].forEach((id, idx) => {
   const layer = [layerTramA, layerTramB, layerTramC, layerTramD][idx];
   document.getElementById(id).onchange = e => toggle(layer, e.target.checked);
 });
 
-// Tous les trams
+// Activation ou désactivation simultanée de toutes les lignes de tram
 document.getElementById("chk-tram").onchange = e => {
   const val = e.target.checked;
   [layerTramA, layerTramB, layerTramC, layerTramD].forEach(l => toggle(l, val));
@@ -303,13 +323,15 @@ document.getElementById("chk-tram").onchange = e => {
   });
 };
 
-// Fonction toggle générique
+// Petite fonction utilitaire pour (dé)afficher une couche
 function toggle(layer, visible) {
   if (!layer) return;
   visible ? map.addLayer(layer) : map.removeLayer(layer);
 }
 
-// Isochrones
+// -------------------------------------------------------
+// Appelle l'API OpenRouteService pour dessiner les zones accessibles à pied et à vélo autour d'un arrêt sélectionné.
+// -------------------------------------------------------
 function drawIsochrones(lat, lon) {
   if (isLoading) return;
   isLoading = true;
@@ -335,9 +357,11 @@ function drawIsochrones(lat, lon) {
   ])
     .then(([isoFoot, isoBike]) => {
       currentIsoLayerFoot = L.geoJSON(isoFoot, {
+        interactive: false,
         style: { color: "#9B59B6", fillColor: "#D2B4DE", fillOpacity: 0.25, weight: 3, dashArray: "4,6" }
       }).addTo(map);
       currentIsoLayerBike = L.geoJSON(isoBike, {
+        interactive: false,
         style: { color: "#1E8449", fillColor: "#52BE80", fillOpacity: 0.25, weight: 3 }
       }).addTo(map);
 
@@ -353,14 +377,15 @@ function drawIsochrones(lat, lon) {
     });
 }
 
-// Rafraîchir si durée modifiée
+// Si l'utilisateur change la durée des isochrones, on relance automatiquement le calcul
 ["iso-range-foot", "iso-range-bike"].forEach(id =>
   document.getElementById(id).addEventListener("change", () => {
     if (selectedArret) drawIsochrones(selectedArret.lat, selectedArret.lon);
   })
 );
 
-// ───────────── RENDRE LES BOITES DEPLACABLES ─────────────
+
+// Gestion du déplacement des panneaux (drag & drop)
 document.querySelectorAll('.draggable').forEach(box => {
   let isDragging = false;
   let offsetX = 0, offsetY = 0;
