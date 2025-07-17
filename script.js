@@ -356,15 +356,13 @@ function drawIsochrones(lat, lon) {
     }).then(res => res.json())
   ])
     .then(([isoFoot, isoBike]) => {
-      currentIsoLayerFoot = L.geoJSON(isoFoot, {
-        interactive: false,
-        style: { color: "#9B59B6", fillColor: "#D2B4DE", fillOpacity: 0.25, weight: 3, dashArray: "4,6" }
-      }).addTo(map);
-      currentIsoLayerBike = L.geoJSON(isoBike, {
-        interactive: false,
-        style: { color: "#1E8449", fillColor: "#52BE80", fillOpacity: 0.25, weight: 3 }
-      }).addTo(map);
-
+      currentIsoLayerFoot = L.geoJSON(isoFoot, {␊
+        style: { color: "#9B59B6", fillColor: "#D2B4DE", fillOpacity: 0.25, weight: 3, dashArray: "4,6" }␊
+      }).addTo(map).bringToBack(); 
+      currentIsoLayerBike = L.geoJSON(isoBike, {␊
+        style: { color: "#1E8449", fillColor: "#52BE80", fillOpacity: 0.25, weight: 3 }␊
+      }).addTo(map).bringToBack();
+      
       map.fitBounds(currentIsoLayerFoot.getBounds(), { padding: [40, 40], maxZoom: 14 });
     })
     .catch(err => {
