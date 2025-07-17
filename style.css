@@ -1,3 +1,7 @@
+/*
+  Feuille de styles principale de l'application.
+  Elle définit l'apparence de la carte et des différents panneaux flottants.
+*/
 body, html {
   margin: 0;
   padding: 0;
