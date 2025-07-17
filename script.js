@@ -10,7 +10,7 @@ let allEntreprisesAeroparc = [], allEntreprisesGDBERSOL = [];
 let fuseEntreprises, fuseGDBERSOL;
 
 
-const map = L.map('map').setView([44.83, -0.715], 13);
+const map = L.map('map', { preferCanvas: true }).setView([44.83, -0.715], 13);
 
 // Fonds de carte
 const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -38,17 +38,11 @@ const iconTramB = L.icon({ iconUrl: "https://ws-maas.infotbm.com/uploads/network
 const iconTramC = L.icon({ iconUrl: "https://ws-maas.infotbm.com/uploads/network/line/images/65f81c805f048_C.svg", iconSize: [24, 24] });
 const iconTramD = L.icon({ iconUrl: "https://ws-maas.infotbm.com/uploads/network/line/images/65f81c4d6e776_D.svg", iconSize: [24, 24] });
 
-const busIcon = L.icon({
-  iconUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Map_pin_icon_green.svg/752px-Map_pin_icon_green.svg.png",
-  iconSize: [20, 30],
-  iconAnchor: [10, 30],
-  popupAnchor: [0, -30]
-});
 
 const entrepriseAEROPARCIcon = L.divIcon({ className: "entreprise-AEROPARC-marker", iconSize: [8, 8] });
 const entrepriseGDBERSOLIcon = L.divIcon({ className: "entreprise-GDBERSOL-marker", iconSize: [6, 6] });
 
-// Groupes de couches
+// Groupes de couches␊
 let layerBus = L.layerGroup();
 let layerTramA = L.layerGroup();
 let layerTramB = L.layerGroup();
@@ -60,7 +54,7 @@ let layerPistes;
 let layerZoneBersol;
 let layerZoneAeroparc;
 
-// 💬 Message de zoom
+// Message de zoom
 function showZoomMessage() {
   const msg = document.getElementById("zoom-message");
   msg.style.display = "block";
@@ -72,7 +66,7 @@ function showZoomMessage() {
 
 
 // Chargement des arrêts
-fetch("arrets_tram_bus.geojson")
+fetch("Arrets_reseau_KBM.geojson")
   .then(res => res.json())
   .then(data => {
     data.features.forEach(feature => {
@@ -83,7 +77,7 @@ fetch("arrets_tram_bus.geojson")
       let marker = null;
 
       if (mode === "BUS") {
-        marker = L.marker([coords[1], coords[0]], { icon: busIcon }).bindPopup(nom);
+        marker = L.circleMarker([coords[1], coords[0]], { radius: 4, color: "#35a16b", weight: 1, fillColor: "#35a16b", fillOpacity: 1 }).bindPopup(nom);
         marker.on("click", () => {
           selectedArret = { lat: coords[1], lon: coords[0] };
           drawIsochrones(coords[1], coords[0]);
@@ -176,7 +170,8 @@ fetch("piste_cyclable.geojson")
 // Chargement entreprises
 function renderLayerFromFeatures(features, icon, layerRef, checkboxId) {
   if (layerRef) map.removeLayer(layerRef);
-  layerRef = L.geoJSON(features, {
+  const cluster = L.markerClusterGroup();
+  const geo = L.geoJSON(features, {
     pointToLayer: (f, latlng) => L.marker(latlng, { icon }),
     onEachFeature: (f, l) => {
       const p = f.properties;
@@ -186,7 +181,8 @@ function renderLayerFromFeatures(features, icon, layerRef, checkboxId) {
       l.bindPopup(popup);
     }
   });
-  return layerRef;
+  cluster.addLayer(geo);
+  return cluster;
 }
 
 fetch("entreprisesaeroparc.geojson")
@@ -217,6 +213,11 @@ fetch("entreprisesbersol.geojson")
 document.getElementById("search-input").addEventListener("input", e => {
   const query = e.target.value.trim().toLowerCase();
 
+  if (!fuseEntreprises || !fuseGDBERSOL) {
+    // Data not yet loaded
+    return;
+  }
+
   if (layerEntreprisesAEROPARC) map.removeLayer(layerEntreprisesAEROPARC);
   if (layerEntreprisesGDBERSOL) map.removeLayer(layerEntreprisesGDBERSOL);
 
@@ -233,6 +234,8 @@ document.getElementById("search-input").addEventListener("input", e => {
 
   layerEntreprisesAEROPARC = renderLayerFromFeatures(resultsAero, entrepriseAEROPARCIcon, null, "chk-aeroparc");
   layerEntreprisesGDBERSOL = renderLayerFromFeatures(resultsBersol, entrepriseGDBERSOLIcon, null, "chk-gdbersol");
+
+  updateEntreprisesLayerVisibility();
 
   if (allResults.length > 0) {
     const bounds = L.geoJSON(allResults).getBounds();
@@ -381,4 +384,3 @@ document.querySelectorAll('.draggable').forEach(box => {
     box.style.cursor = "grab";
   });
 });
-
