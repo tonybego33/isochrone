@@ -10,6 +10,9 @@
 
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+
 
   <!-- Style personnalisé -->
   <link rel="stylesheet" href="style.css" />
@@ -71,10 +74,10 @@
   <!-- Légende -->
   <div id="map-legend" class="draggable">
     <strong>Légende :</strong><br><br>
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Map_pin_icon_green.svg/752px-Map_pin_icon_green.svg.png" width="16"> Arrêt de bus<br>
+    <span class="legend-dot green"></span> Arrêt de bus<br>
     <img src="https://ws-maas.infotbm.com/uploads/network/line/images/65f81cc3efe57_A.svg" width="16"> Arrêt de tram<br><br>
-    <span class="legend-dot red"></span> Entreprises PMIE Aéroparc<br>
-    <span class="legend-dot black"></span> Entreprises PMIE Grand Bersol<br><br>
+    <span class="legend-dot red"></span> Entreprises Aéroparc<br>
+    <span class="legend-dot black"></span> Entreprises Grand Bersol<br><br>
     <span class="legend-line violet-dash"></span> Isochrone à pied<br>
     <span class="legend-line green-line"></span> Isochrone à vélo
   </div>
@@ -90,6 +93,7 @@
 
   <!-- Scripts -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
   <script src="script.js"></script>
 </body>
