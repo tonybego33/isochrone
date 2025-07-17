@@ -1,3 +1,7 @@
+<!--
+  Page principale de l'application de visualisation des isochrones.
+  Elle charge la carte, les contrôles et tous les scripts nécessaires.
+-->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -10,8 +14,6 @@
 
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
 
 
   <!-- Style personnalisé -->
@@ -19,8 +21,8 @@
 </head>
 <body>
 
-  <!-- Carte -->
-  <div id="map"></div>
+  <!-- Carte -->␊
+  <div id="map"></div> <!-- élément où Leaflet affichera la carte -->
 
   <!-- Contrôles de durée -->
   <div id="controls" class="draggable">
@@ -92,6 +94,7 @@
   <div id="zoom-message">🔍 Zoomez davantage pour afficher cette couche.</div>
 
   <!-- Scripts -->
+  <!-- Chargement des librairies Leaflet, MarkerCluster et Fuse pour la recherche -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
