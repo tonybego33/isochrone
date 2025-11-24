@@ -172,3 +172,14 @@ input[type="checkbox"] {
   display: none;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
+
+
+.module_map .map_container {
+    transform: translateX(0px) translateY(0px) scale(1,1) rotate(0deg);
+    transform-origin: center center;
+    opacity: 1;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
+    filter: alpha(opacity=100);
+    position: relative
+}
+
